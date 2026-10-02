@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>NEO-MATRIX 4D // DATA VAULT</title>
+  
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background-color: #000;
+      color: #00ff66;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace;
+      overflow: hidden;
+      height: 100vh;
+      width: 100vw;
+    }
+
+    #matrixCanvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+    }
+
+    /* Cyber HUD Control Panel */
+    .hud-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 2;
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 15px;
+    }
+
+    .hud-header {
+      background: rgba(0, 15, 5, 0.85);
+      border: 1px solid #00ff66;
+      border-radius: 10px;
+      padding: 12px 15px;
+      backdrop-filter: blur(6px);
+      box-shadow: 0 0 15px rgba(0, 255, 102, 0.3);
+    }
+
+    .hud-header h1 {
+      font-size: 16px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #00ff66;
+      text-shadow: 0 0 8px #00ff66;
+    }
+
+    .hud-header p {
+      font-size: 10px;
+      color: #88ffbb;
+      margin-top: 3px;
+    }
+
+    .hud-controls {
+      pointer-events: auto;
+      background: rgba(0, 15, 5, 0.85);
+      border: 1px solid #00ff66;
+      border-radius: 10px;
+      padding: 12px;
+      backdrop-filter: blur(6px);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .btn-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .btn {
+      background: rgba(0, 255, 102, 0.15);
+      border: 1px solid #00ff66;
+      color: #00ff66;
+      padding: 10px;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 11px;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      text-align: center;
+      user-select: none;
+    }
+
+    .btn:active {
+      background: #00ff66;
+      color: #000;
+    }
+
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+    }
+
+    .val {
+      color: #ff0055;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <canvas id="matrixCanvas"></canvas>
+
+  <div class="hud-overlay">
+    <div class="hud-header">
+      <h1>NEO-MATRIX 4D // ENGINE</h1>
+      <p>QUANTUM DATA STREAM & CODE RAIN VISUALIZER</p>
+    </div>
+
+    <div class="hud-controls">
+      <div class="stat-row">
+        <span>CURRENT SPECTRUM:</span>
+        <span class="val" id="colorMode">CYBER GREEN</span>
+      </div>
+      <div class="stat-row">
+        <span>STREAM DENSITY:</span>
+        <span class="val" id="densityVal">HIGH (100%)</span>
+      </div>
+
+      <div class="btn-grid">
+        <button class="btn" onclick="toggleColor()">TOGGLE COLOR</button>
+        <button class="btn" onclick="triggerOverload()">DATA OVERLOAD</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('matrixCanvas');
+    const ctx = canvas.getContext('2d');
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    // Matrix Characters (Katakana, Latin, Numbers, Symbols)
+    const chars = 'アァカサタナハマヤャラワガザダバパイィキシチニヒミリヰギジヂビピウゥクスツヌフムユュルグズブヅプエェケセテネヘメレヱゲゼデベペオォコソトノホモヨョロヲゴゾドボポヴッン0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ$%#@&*';
+    
+    const fontSize = 14;
+    let columns = Math.floor(canvas.width / fontSize);
+    let drops = Array(columns).fill(1);
+
+    // Color Spectrum Modes
+    const colors = [
+      { name: 'CYBER GREEN', main: '#00ff66', head: '#ffffff' },
+      { name: 'NEON BLUE', main: '#00f0ff', head: '#ffffff' },
+      { name: 'CRIMSON RED', main: '#ff0055', head: '#ffffff' },
+      { name: 'AMBER GOLD', main: '#ffaa00', head: '#ffffff' }
+    ];
+    let currentColorIndex = 0;
+    let speedMultiplier = 1;
+
+    function drawMatrix() {
+      // Semi-transparent background for rain trail effect
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      const activeColor = colors[currentColorIndex];
+
+      ctx.font = `${fontSize}px monospace`;
+
+      for (let i = 0; i < drops.length; i++) {
+        const text = chars.charAt(Math.floor(Math.random() * chars.length));
+        const x = i * fontSize;
+        const y = drops[i] * fontSize;
+
+        // Head character glowing white
+        if (Math.random() > 0.85) {
+          ctx.fillStyle = activeColor.head;
+        } else {
+          ctx.fillStyle = activeColor.main;
+        }
+
+        ctx.fillText(text, x, y);
+
+        if (y > canvas.height && Math.random() > 0.975) {
+          drops[i] = 0;
+        }
+
+        drops[i] += speedMultiplier;
+      }
+
+      requestAnimationFrame(drawMatrix);
+    }
+
+    drawMatrix();
+
+    // UI Interactive Controls
+    function toggleColor() {
+      currentColorIndex = (currentColorIndex + 1) % colors.length;
+      document.getElementById('colorMode').innerText = colors[currentColorIndex].name;
+    }
+
+    function triggerOverload() {
+      speedMultiplier = 3;
+      document.getElementById('densityVal').innerText = "OVERLOAD (300%)";
+
+      setTimeout(() => {
+        speedMultiplier = 1;
+        document.getElementById('densityVal').innerText = "HIGH (100%)";
+      }, 3000);
+    }
+
+    // Interactive Touch / Mouse Node Burst
+    window.addEventListener('touchstart', (e) => {
+      const touch = e.touches[0];
+      const col = Math.floor(touch.clientX / fontSize);
+      if (col >= 0 && col < drops.length) {
+        drops[col] = 0;
+      }
+    });
+  </script>
+</body>
+  </html>
+  
